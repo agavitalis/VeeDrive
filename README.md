@@ -1,6 +1,6 @@
-# Apollo tutorial
+# VeeDrive
 
-This is the fullstack app for the [Apollo tutorial](http://apollographql.com/docs/tutorial/introduction.html). 🚀
+This is the fullstack app for the [Apollo tutorial](http://w3resource.com). 🚀
 
 ## File structure
 
@@ -23,3 +23,7 @@ and
 ```bash
 cd final/client && npm i && npm start
 ```
+
+## Credits
+
+The app is a rewrite of Apollo Tutorial App, Many thanks to them
