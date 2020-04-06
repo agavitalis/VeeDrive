@@ -1,8 +1,8 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import { useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 
-import { LAUNCH_TILE_DATA } from './launches';
+import {LAUNCH_TILE_DATA} from "../pages/profile";
 import { Loading, Header, LaunchDetail } from '../components';
 import { ActionButton } from '../containers';
 
@@ -30,12 +30,19 @@ export default function Launch({ launchId }) {
   if (error) return <p>ERROR: {error.message}</p>;
 
   return (
-    <Fragment>
+    <>
+      {
+        loading?
+          <Header />
+        :
+          <>
       <Header image={data.launch.mission.missionPatch}>
         {data.launch.mission.name}
       </Header>
       <LaunchDetail {...data.launch} />
       <ActionButton {...data.launch} />
-    </Fragment>
+          </>
+      }
+    </>
   );
 }

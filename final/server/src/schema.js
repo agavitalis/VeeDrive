@@ -52,6 +52,7 @@ const typeDefs = gql`
 
   type Launch {
     id: ID!
+    date: Int
     site: String
     mission: Mission
     rocket: Rocket

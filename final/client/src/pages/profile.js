@@ -1,9 +1,25 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import { useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 
 import { Loading, Header, LaunchTile } from '../components';
-import { LAUNCH_TILE_DATA } from './launches';
+
+export const LAUNCH_TILE_DATA = gql`
+  fragment LaunchTile on Launch {
+    __typename
+    id
+    date
+    isBooked
+    rocket {
+      id
+      name
+    }
+    mission {
+      name
+      missionPatch
+    }
+  }
+`;
 
 export const GET_MY_TRIPS = gql`
   query GetMyTrips {
@@ -23,19 +39,23 @@ export default function Profile() {
     GET_MY_TRIPS,
     { fetchPolicy: "network-only" }
   );
-  if (loading) return <Loading />;
-  if (error) return <p>ERROR: {error.message}</p>;
+  if (error) return <pre>{JSON.stringify(error, null, 2)}</pre>;
 
+  const me = data.me;
   return (
-    <Fragment>
+    <>
       <Header>My Trips</Header>
-      {data.me && data.me.trips.length ? (
-        data.me.trips.map(launch => (
+
+      {
+        loading?
+          <Loading />
+        : me && me.trips.length?
+          ( me.trips.map(launch => (
           <LaunchTile key={launch.id} launch={launch} />
-        ))
-      ) : (
+          )) )
+        :
         <p>You haven't booked any trips</p>
-      )}
-    </Fragment>
+      }
+    </>
   );
 }

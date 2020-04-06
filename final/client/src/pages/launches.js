@@ -1,24 +1,9 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import { useQuery } from '@apollo/react-hooks';
 import gql from 'graphql-tag';
 
 import { LaunchTile, Header, Button, Loading } from '../components';
-
-export const LAUNCH_TILE_DATA = gql`
-  fragment LaunchTile on Launch {
-    __typename
-    id
-    isBooked
-    rocket {
-      id
-      name
-    }
-    mission {
-      name
-      missionPatch
-    }
-  }
-`;
+import {LAUNCH_TILE_DATA} from "../pages/profile";
 
 export const GET_LAUNCHES = gql`
   query GetLaunchList($after: String) {
@@ -35,19 +20,23 @@ export const GET_LAUNCHES = gql`
 
 export default function Launches() {
   const { data, loading, error, fetchMore } = useQuery(GET_LAUNCHES);
-  if (loading) return <Loading />;
-  if (error) return <p>ERROR</p>;
+  if (error) return <pre>{JSON.stringify(error, null, 2)}</pre>;
 
   return (
-    <Fragment>
+    <>
       <Header />
-      {data.launches &&
-        data.launches.launches &&
+      {
+        loading?
+          <Loading />
+        : data.launches && data.launches.launches?
         data.launches.launches.map(launch => (
           <LaunchTile key={launch.id} launch={launch} />
-        ))}
-      {data.launches &&
-        data.launches.hasMore && (
+          ))
+        :
+          null
+      }
+
+      {!loading && data.launches && data.launches.hasMore && (
           <Button
             onClick={() =>
               fetchMore({
@@ -73,6 +62,7 @@ export default function Launches() {
             Load More
           </Button>
         )}
-    </Fragment>
+
+    </>
   );
 }
