@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import styled, { css } from 'react-emotion';
 import { size } from 'polished';
 
@@ -9,42 +9,50 @@ import { ReactComponent as Curve } from '../assets/curve.svg';
 import { ReactComponent as Rocket } from '../assets/rocket.svg';
 import { colors, unit } from '../styles';
 
-export default class LoginForm extends Component {
-  state = { email: '' };
+export default function LoginForm(props) {
+  const [state, setState] = useState({ email: '', password: '' });
 
-  onChange = event => {
-    const email = event.target.value;
-    this.setState(s => ({ email }));
-  };
-
-  onSubmit = event => {
-    event.preventDefault();
-    this.props.login({ variables: { email: this.state.email } });
-  };
-
-  render() {
-    return (
-      <Container>
-        <Header>
-          <StyledCurve />
-          <StyledLogo />
-        </Header>
-        <StyledRocket />
-        <Heading>Space Explorer</Heading>
-        <StyledForm onSubmit={this.onSubmit}>
-          <StyledInput
-            required
-            type="email"
-            name="email"
-            placeholder="Email"
-            data-testid="login-input"
-            onChange={this.onChange}
-          />
-          <Button type="submit">Log in</Button>
-        </StyledForm>
-      </Container>
-    );
+  function handleInputChange(event) {
+    setState({...state, [event.target.name]: event.target.value});
   }
+
+  function onSubmit(event) {
+    event.preventDefault();
+    localStorage.setItem('loggingIn', '1');
+    props.login({ variables: { email: state.email, password: state.password } });
+  }
+
+  return (
+    <Container>
+      <Header>
+        <StyledCurve />
+        <StyledLogo />
+      </Header>
+      <StyledRocket />
+      <Heading>Space Explorer</Heading>
+      <Subheading>Create a new account or login with your credentials</Subheading>
+      <StyledForm onSubmit={onSubmit}>
+        <StyledInput
+          required
+          type="email"
+          name="email"
+          placeholder="Email"
+          data-testid="login-input"
+          onChange={handleInputChange}
+          autoFocus
+        />
+        <StyledInput
+          required
+          type="password"
+          name="password"
+          placeholder="Password"
+          data-testid="login-input"
+          onChange={handleInputChange}
+        />
+        <Button type="submit">Log in</Button>
+      </StyledForm>
+    </Container>
+  );
 }
 
 /**
@@ -91,6 +99,12 @@ const StyledCurve = styled(Curve)(size('100%'), {
 
 const Heading = styled('h1')({
   margin: `${unit * 3}px 0 ${unit * 6}px`,
+});
+
+const Subheading = styled('h5')({
+  width: `428px`,
+  textAlign: `center`,
+  marginBottom: `15px`
 });
 
 const StyledRocket = styled(Rocket)(svgClassName, {

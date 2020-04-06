@@ -50,8 +50,9 @@ module.exports.createStore = () => {
     createdAt: SQL.DATE,
     updatedAt: SQL.DATE,
     email: SQL.STRING,
-    token: SQL.STRING,
+    password: SQL.STRING,
   });
+  users.sync(); // CREATE TABLE IF NOT EXISTS
 
   const trips = db.define('trip', {
     id: {
@@ -64,6 +65,7 @@ module.exports.createStore = () => {
     launchId: SQL.INTEGER,
     userId: SQL.INTEGER,
   });
+  trips.sync(); // CREATE TABLE IF NOT EXISTS
 
   return { users, trips };
 };
