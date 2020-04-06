@@ -31,7 +31,9 @@ const client = new ApolloClient({
 
 cache.writeData({
   data: {
-    isLoggedIn: !!localStorage.getItem('token'),
+    // TODO: When having an invalid token in localStorage this gives error, hardcoded to false for now
+    //isLoggedIn: !!localStorage.getItem('token'),
+    isLoggedIn: false,
     cartItems: [],
   },
 });
