@@ -24,10 +24,10 @@ export default function BookTrips({ cartItems }) {
     BOOK_TRIPS,
     {
       variables: { launchIds: cartItems },
-      refetchQueries: cartItems.map(launchId => ({
+      /*refetchQueries: cartItems.map(launchId => ({
         query: GET_LAUNCH,
         variables: { launchId },
-      })),
+      })),*/
       update(cache) {
         cache.writeData({ data: { cartItems: [] } });
       }

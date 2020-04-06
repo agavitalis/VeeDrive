@@ -1,14 +1,14 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import styled from 'react-emotion';
 
 import { unit, colors } from '../styles';
 
 export default function PageContainer(props) {
   return (
-    <Fragment>
+    <>
       <Bar />
       <Container>{props.children}</Container>
-    </Fragment>
+    </>
   );
 }
 
