@@ -22,7 +22,17 @@ export const CANCEL_TRIP = gql`
       launches {
         id
         isBooked
+        isInCart @client
       }
+    }
+  }
+`;
+
+const GET_IS_IN_CART = gql`
+  query LaunchDetails($launchId: ID!) {
+    launch(id: $launchId) {
+      id
+      isInCart @client
     }
   }
 `;
@@ -32,17 +42,16 @@ export default function ActionButton({ isBooked, id, isInCart }) {
     isBooked ? CANCEL_TRIP : TOGGLE_CART,
     {
       variables: { launchId: id },
-      refetchQueries: [
+      refetchQueries: [   // Update isInCart as it is in local cache (@client), it doesn't come from server
         {
-          query: GET_LAUNCH_DETAILS,
+          query: GET_IS_IN_CART,
           variables: { launchId: id },
         },
       ]
     }
   );
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>An error occurred</p>;
+  if (error) return <pre>{JSON.stringify(error, null, 2)}</pre>;
 
   return (
     <div>
@@ -51,11 +60,16 @@ export default function ActionButton({ isBooked, id, isInCart }) {
         isBooked={isBooked}
         data-testid={'action-button'}
       >
-        {isBooked
-          ? 'Cancel This Trip'
-          : isInCart
-            ? 'Remove from Cart'
-            : 'Add to Cart'}
+        {
+          loading?  /* It only shows when Cancel This Trip is clicked */
+            'Canceling'
+          : isBooked?
+            'Cancel This Trip'
+          : !isInCart?
+              'Add to Cart'
+          :
+              'Remove from Cart'
+        }
       </Button>
     </div>
   );

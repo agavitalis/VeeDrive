@@ -13,7 +13,7 @@ export function getBackgroundImage(id) {
 }
 
 export default ({ launch }) => {
-  const { id, mission, rocket } = launch;
+  const { id, date, mission, rocket } = launch;
   return (
     <StyledLink
       to={`/launch/${id}`}
@@ -23,6 +23,7 @@ export default ({ launch }) => {
     >
       <h3>{mission.name}</h3>
       <h5>{rocket.name}</h5>
+      <h5>{new Date(date*1000).toLocaleDateString()}</h5>
     </StyledLink>
   );
 };

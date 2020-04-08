@@ -1,7 +1,5 @@
-// require('dotenv').config();
-
+require('dotenv').config();
 const { ApolloServer } = require('apollo-server');
-const isEmail = require('isemail');
 
 const typeDefs = require('./schema');
 const resolvers = require('./resolvers');
@@ -11,6 +9,19 @@ const LaunchAPI = require('./datasources/launch');
 const UserAPI = require('./datasources/user');
 
 const internalEngineDemo = require('./engine-demo');
+
+const jwt = require('jsonwebtoken');
+const getUser = token => {
+  try {
+    if (token) {
+      return jwt.verify(token, process.env.JWT_SECRET)
+    }
+    return false;
+  } catch (err) {
+    console.log('Error when jwt.verifying token');
+    return false;
+  }
+};
 
 // creates a sequelize connection once. NOT for every request
 const store = createStore();
@@ -24,16 +35,29 @@ const dataSources = () => ({
 // the function that sets up the global context for each resolver, using the req
 const context = async ({ req }) => {
   // simple auth check on every request
-  const auth = (req.headers && req.headers.authorization) || '';
-  const email = new Buffer(auth, 'base64').toString('ascii');
+  let response = { user: null };
 
-  // if the email isn't formatted validly, return null for user
-  if (!isEmail.validate(email)) return { user: null };
-  // find a user by their email
-  const users = await store.users.findOrCreate({ where: { email } });
-  const user = users && users[0] ? users[0] : null;
+  const tokenWithBearer = req.headers.authorization || '';
+  const token = tokenWithBearer.split(' ')[1];
+  // try to retrieve a user with the token
+  const tokenUser = getUser(token);
+  console.log('tokenUser', tokenUser);
+  if (!tokenUser || !tokenUser.email) {
+    return response;
+  }
 
-  return { user: { ...user.dataValues } };
+  // put in context the user's data used in UserAPI (email and id), so verify they are correct
+  const found = await store.users.findOne({ where: { email: tokenUser.email} });
+  if (!found) {
+    console.log('email not found in users');
+    return response;
+  }
+  if (found.dataValues.id !== tokenUser.id) {
+    console.log('id incorrect for email ' + found.email);
+    return response;
+  }
+  console.log('tokenUser ok', tokenUser);
+  return { user: tokenUser };
 };
 
 // Set up Apollo Server
@@ -52,7 +76,7 @@ const server = new ApolloServer({
 // if we're in a test env, we'll manually start it in a test
 if (process.env.NODE_ENV !== 'test')
   server
-    .listen({ port: 4000 })
+    .listen({ port: process.env.PORT })
     .then(({ url }) => console.log(`🚀 app running at ${url}`));
 
 // export all the important pieces for integration/e2e tests to use

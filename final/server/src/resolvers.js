@@ -1,4 +1,16 @@
+require('dotenv').config();
 const { paginateResults } = require('./utils');
+const jsonwebtoken = require('jsonwebtoken');
+
+function createToken({id, email}) {
+  const token = jsonwebtoken.sign(
+    { id, email },
+    process.env.JWT_SECRET,
+    { expiresIn: '1h' }
+  );
+  console.log('createdToken', token);
+  return token;
+}
 
 module.exports = {
   Query: {
@@ -27,7 +39,7 @@ module.exports = {
     launch: (_, { id }, { dataSources }) =>
       dataSources.launchAPI.getLaunchById({ launchId: id }),
     me: async (_, __, { dataSources }) =>
-      dataSources.userAPI.findOrCreateUser(),
+      dataSources.userAPI.me(),
   },
   Mutation: {
     bookTrips: async (_, { launchIds }, { dataSources }) => {
@@ -63,11 +75,22 @@ module.exports = {
         launches: [launch],
       };
     },
-    login: async (_, { email }, { dataSources }) => {
-      const user = await dataSources.userAPI.findOrCreateUser({ email });
-      if (user) return new Buffer(email).toString('base64');
+
+		/**
+		* If email exists verify password is correct, if not create a new user with password entered
+		*/
+    login: async (_, { email, password }, { dataSources }) => {
+      console.log('resolvers.js login');
+      const result = await dataSources.userAPI.findOrCreateUser({ email, password });
+      const response = Object.assign({success: result.success, message: result.message},
+        result.user && {token: createToken(result.user)},
+        result.user && {email: result.user.email},
+      );
+      console.log('response', response);
+      return response;
     },
   },
+
   Launch: {
     isBooked: async (launch, _, { dataSources }) =>
       dataSources.userAPI.isBookedOnLaunch({ launchId: launch.id }),

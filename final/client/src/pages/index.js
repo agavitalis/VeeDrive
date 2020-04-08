@@ -9,7 +9,7 @@ import { Footer, PageContainer } from '../components';
 
 export default function Pages() {
   return (
-    <Fragment>
+    <>
       <PageContainer>
         <Router primary={false} component={Fragment}>
           <Launches path="/" />
@@ -19,6 +19,6 @@ export default function Pages() {
         </Router>
       </PageContainer>
       <Footer />
-    </Fragment>
+    </>
   );
 }

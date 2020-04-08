@@ -4,7 +4,7 @@ import styled from 'react-emotion';
 import { unit } from '../styles';
 import { cardClassName, getBackgroundImage } from './launch-tile';
 
-const LaunchDetail = ({ id, site, rocket }) => (
+const LaunchDetail = ({ id, date, site, rocket }) => (
   <Card
     style={{
       backgroundImage: getBackgroundImage(id),
@@ -14,6 +14,7 @@ const LaunchDetail = ({ id, site, rocket }) => (
       {rocket.name} ({rocket.type})
     </h3>
     <h5>{site}</h5>
+    <h5>{new Date(date*1000).toLocaleDateString()}</h5>
   </Card>
 );
 

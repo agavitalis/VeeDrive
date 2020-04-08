@@ -1,5 +1,6 @@
 const { DataSource } = require('apollo-datasource');
 const isEmail = require('isemail');
+const bcrypt = require('bcrypt');
 
 class UserAPI extends DataSource {
   constructor({ store }) {
@@ -17,18 +18,35 @@ class UserAPI extends DataSource {
     this.context = config.context;
   }
 
-  /**
-   * User can be called with an argument that includes email, but it doesn't
-   * have to be. If the user is already on the context, it will use that user
-   * instead
-   */
-  async findOrCreateUser({ email: emailArg } = {}) {
-    const email =
-      this.context && this.context.user ? this.context.user.email : emailArg;
-    if (!email || !isEmail.validate(email)) return null;
+  async findOrCreateUser({ email , password } = {}) {
+    console.log('user.js findOrCreateUser');
+    if (!email || !isEmail.validate(email) || !password) return { success: false, error: 'Invalid email or password' };
+    const [ { dataValues: user }, created] = await this.store.users.findOrCreate({where: { email }, defaults: { email, password: await bcrypt.hash(password, 10) }});
+    console.log('user', user);
+    if (!created) {
+      const match = await bcrypt.compare(password, user.password);
+      if (!match) {
+        return {
+          success: false,
+          message: 'Password is incorrect'
+        };
+      }
+      return {
+        success: true,
+        message: 'Login successful for ' + user.email,
+        user
+      };
+    }
+    return {
+      success: true,
+      message: 'Signup successful for ' + user.email,
+      user
+    };
+  }
 
-    const users = await this.store.users.findOrCreate({ where: { email } });
-    return users && users[0] ? users[0] : null;
+  async me() {
+    console.log('datasources/user.js me', this.context.user);
+    return this.context.user;
   }
 
   async bookTrips({ launchIds }) {
@@ -37,8 +55,7 @@ class UserAPI extends DataSource {
 
     let results = [];
 
-    // for each launch id, try to book the trip and add it to the results array
-    // if successful
+    // for each launch id, try to book the trip and add it to the results array if successful
     for (const launchId of launchIds) {
       const res = await this.bookTrip({ launchId });
       if (res) results.push(res);
